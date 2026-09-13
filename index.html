@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="it">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scopa — Casa Zaccaria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600;6..96,800&display=swap" rel="stylesheet">
+<style>
+  :root{--feltro:#0E3B31;--feltro-scuro:#08251F;--avorio:#F3EAD3;--avorio-ombra:#DCCFAE;--oro:#C89B3C;--inchiostro:#141210}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:radial-gradient(120% 80% at 50% 0%,#175146 0%,var(--feltro) 45%,var(--feltro-scuro) 100%);color:var(--avorio);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.45;min-height:100vh;padding:14px 12px 34px}
+  h1,h2{font-family:"Bodoni Moda",Didot,Georgia,serif;font-weight:600;margin:0}
+  .wrap{max-width:520px;margin:0 auto}
+  .stemma{display:block;margin:6px auto 0;width:70px;height:80px}
+  .hero{text-align:center;padding:8px 6px 14px}
+  .hero .casato{font-family:"Bodoni Moda",Georgia,serif;font-size:12.5px;letter-spacing:.42em;color:var(--oro);margin-top:8px}
+  .hero h1{font-size:40px;line-height:1;margin-top:2px}
+  .hero p{margin:10px auto 0;max-width:32ch;color:#D6E2DA;font-size:15px}
+  .fregio{margin:12px auto;width:90px;height:1px;background:linear-gradient(90deg,transparent,var(--oro),transparent)}
+  .pannello{background:rgba(0,0,0,.22);border:1px solid rgba(200,155,60,.35);border-radius:4px;padding:15px;margin-bottom:13px}
+  .pannello h2{font-size:20px;margin-bottom:4px}
+  .pannello p.aiuto{margin:2px 0 11px;font-size:14px;color:#C6D5CC}
+  textarea{width:100%;min-height:78px;padding:11px;font-size:15px;font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--avorio);color:var(--inchiostro);border:none;border-radius:3px;resize:vertical}
+  .riga{display:flex;gap:9px;margin-top:11px;flex-wrap:wrap}
+  button{font:inherit;font-size:16px;font-weight:600;cursor:pointer;padding:12px 16px;border-radius:3px;border:1px solid var(--oro);background:var(--oro);color:#241a06;flex:1}
+  button.vuoto{background:transparent;color:var(--oro)}
+  button:focus-visible,.carta.giocabile:focus-visible,.nome:focus-visible{outline:3px solid #8FD6C0;outline-offset:2px}
+  .nota{font-size:13px;color:#9FB5AB;margin-top:12px;text-align:center}
+  .rosa{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 2px}
+  .nome{padding:9px 14px;border-radius:999px;cursor:pointer;font-size:15.5px;background:transparent;color:var(--avorio);border:1px solid rgba(243,234,211,.4)}
+  .nome.scelto{background:var(--avorio);color:var(--inchiostro);border-color:var(--avorio);font-weight:600}
+  .barra{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .barra .etich{font-size:12.5px;color:#9FB5AB;letter-spacing:.2em}
+  .punteggi{display:flex;gap:14px;font-size:14px}
+  .punteggi b{font-family:"Bodoni Moda",Georgia,serif;font-size:19px}
+  .zona{margin:13px 0}
+  .zona-tit{font-size:13px;color:#9FB5AB;margin-bottom:7px;display:flex;justify-content:space-between}
+  .mano-avv{display:flex;gap:5px}
+  .dorso{width:38px;height:56px;border-radius:3px;background:repeating-linear-gradient(45deg,#8C1F16 0 5px,#6E1610 5px 10px);border:2px solid var(--avorio-ombra)}
+  .campo{min-height:96px;display:flex;flex-wrap:wrap;gap:7px;padding:11px;border-radius:4px;background:rgba(0,0,0,.2);border:1px dashed rgba(200,155,60,.3)}
+  .campo.vuoto::after{content:"tavolo pulito";color:#7E938A;font-size:14px;margin:auto}
+  .carta{width:58px;height:84px;border-radius:4px;background:var(--avorio);color:var(--inchiostro);border:1px solid var(--avorio-ombra);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+  .carta .num{position:absolute;top:2px;left:5px;font-family:"Bodoni Moda",Georgia,serif;font-weight:700;font-size:17px;line-height:1}
+  .carta .figura{position:absolute;bottom:3px;width:100%;text-align:center;font-size:9.5px;letter-spacing:.06em}
+  .carta svg{width:38px;height:53px;margin-top:2px}
+  .carta.mia{width:66px;height:96px}
+  .carta.mia svg{width:44px;height:62px}
+  .carta.mini{width:34px;height:50px;box-shadow:none}
+  .carta.mini svg{width:21px;height:29px;margin-top:3px}
+  .carta.mini .num{font-size:12px;top:1px;left:3px}
+  .carta.mini .figura{display:none}
+  .mano-mia{display:flex;gap:9px;flex-wrap:wrap}
+  .carta.giocabile{cursor:pointer;transition:transform .12s ease}
+  .carta.giocabile:hover{transform:translateY(-5px)}
+  .carta.spenta{opacity:.5}
+  .turno{font-family:"Bodoni Moda",Georgia,serif;font-size:20px;text-align:center;padding:9px;border-top:1px solid rgba(200,155,60,.3);border-bottom:1px solid rgba(200,155,60,.3);margin:11px 0}
+  .turno.attivo{color:var(--oro)}
+  .scelta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px;margin-bottom:8px;cursor:pointer;background:rgba(0,0,0,.25);border:1px solid rgba(200,155,60,.4);border-radius:3px}
+  .scelta span{font-size:14px;margin-right:4px}
+  .codice-box{background:var(--avorio);color:var(--inchiostro);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;
+    word-break:break-all;padding:11px;border-radius:3px;max-height:104px;overflow:auto;margin-top:9px}
+  .diario{margin-top:14px;font-size:13.5px;color:#B9CCC3}
+  .diario div{padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+  table.conto{width:100%;border-collapse:collapse;font-size:15px;margin:10px 0}
+  table.conto th,table.conto td{padding:6px 4px;text-align:left;border-bottom:1px solid rgba(255,255,255,.1)}
+  table.conto td.pt{text-align:right;font-family:"Bodoni Moda",Georgia,serif;font-size:17px}
+  .vinta{font-family:"Bodoni Moda",Georgia,serif;font-size:27px;text-align:center;color:var(--oro);margin:8px 0}
+  .avviso{background:rgba(168,35,24,.25);border:1px solid #A82318;padding:10px;border-radius:3px;font-size:14px;margin:10px 0}
+  .ok{background:rgba(47,107,58,.3);border:1px solid #3E8E4F;padding:10px;border-radius:3px;font-size:14px;margin:10px 0}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>
+  .albo{width:100%;border-collapse:collapse;font-size:15px;margin-top:6px}
+  .albo th{font-size:12.5px;color:#9FB5AB;font-weight:400;text-align:right;padding-bottom:4px}
+  .albo th:first-child{text-align:left}
+  .albo td{padding:7px 0;border-top:1px solid rgba(255,255,255,.09);text-align:right}
+  .albo td:first-child{text-align:left}
+  .albo td.trofei{font-family:"Bodoni Moda",Georgia,serif;font-size:19px;color:var(--oro)}
+  .albo tr.capofila td:first-child::after{content:" \265B";color:var(--oro)}
+  .nome.aggiungi{border-style:dashed;color:var(--oro);border-color:rgba(200,155,60,.6)}
+  button.piccolo{flex:0 0 auto;padding:8px 12px;font-size:13.5px}
+  .attesa{text-align:center;padding:20px 0;color:#C6D5CC}
+  .pulsa{animation:pulsa 1.6s ease-in-out infinite}
+  @keyframes pulsa{50%{opacity:.45}}
+</style>
+<div class="wrap"><div id="app"></div></div>
+<script>
+/* =======================================================================
+   INDIRIZZO DEL MAGAZZINO ONLINE (Firebase Realtime Database).
+   Se lo scrivi qui sotto fra le virgolette, nessuno dovrà mai impostarlo.
+   Esempio:  const DB_PREIMPOSTATO = "https://scopa-zaccaria-default-rtdb.firebaseio.com";
+   ======================================================================= */
+const DB_PREIMPOSTATO = "";
+</script>
+<script>
+/* ============================ carte (grafica) ============================ */
+const SEMI={D:{nome:"denari",colore:"#C89B3C"},C:{nome:"coppe",colore:"#A82318"},S:{nome:"spade",colore:"#1E4C86"},B:{nome:"bastoni",colore:"#6B4A24"}};
+const FIGURE={8:"fante",9:"cavallo",10:"re"};
+function semeMarker(seme,cx,cy,scale,rot){
+  scale=scale||1;rot=rot||0;const c=SEMI[seme].colore;
+  const g=inner=>`<g transform="translate(${cx} ${cy}) rotate(${rot}) scale(${scale})">${inner}</g>`;
+  if(seme==="D"){const raggi=Array.from({length:8}).map((_,i)=>`<line x1="0" y1="-7.6" x2="0" y2="-9.6" stroke="${c}" stroke-width="1" transform="rotate(${i*45})"/>`).join("");
+    return g(`<circle r="7.6" fill="#F3EAD3" stroke="${c}" stroke-width="1.3"/>${raggi}<circle r="3.3" fill="none" stroke="${c}" stroke-width="1"/><circle r="0.9" fill="${c}"/>`);}
+  if(seme==="C") return g(`<path d="M-5 -7 Q-5 -1 0 1 Q5 -1 5 -7 Z" fill="none" stroke="${c}" stroke-width="1.4" stroke-linejoin="round"/><path d="M-5 -6.4 Q-8.4 -6 -8 -3 Q-7.7 -0.3 -5 -1.1" fill="none" stroke="${c}" stroke-width="1"/><path d="M5 -6.4 Q8.4 -6 8 -3 Q7.7 -0.3 5 -1.1" fill="none" stroke="${c}" stroke-width="1"/><path d="M0 1 V5" stroke="${c}" stroke-width="1.3"/><path d="M-3.4 7 H3.4" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/>`);
+  if(seme==="S") return g(`<path d="M0 -9.6 V6" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/><path d="M-3.6 3.2 H3.6" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/><circle cx="-3.6" cy="3.2" r="0.85" fill="${c}"/><circle cx="3.6" cy="3.2" r="0.85" fill="${c}"/><path d="M0 6 V8.6" stroke="${c}" stroke-width="2.2" stroke-linecap="round"/><circle cy="9" r="0.9" fill="${c}"/>`);
+  return g(`<path d="M0 -9 C4 -6 4.2 4 0 9 C-4.2 4 -4 -6 0 -9 Z" fill="${c}" fill-opacity=".22" stroke="${c}" stroke-width="1.3" stroke-linejoin="round"/><path d="M0 -8 V8" stroke="${c}" stroke-width="0.9" stroke-opacity=".7"/>`);
+}
+const PIP={1:[[30,42]],2:[[30,14],[30,70]],3:[[30,14],[30,42],[30,70]],4:[[15,14],[45,14],[15,70],[45,70]],
+  5:[[15,14],[45,14],[30,42],[15,70],[45,70]],6:[[15,10],[45,10],[15,42],[45,42],[15,74],[45,74]],
+  7:[[15,8],[45,8],[15,32],[45,32],[30,52],[15,76],[45,76]]};
+const ORO_FIG="#D9A63B",PELLE="#F3EAD3",INCH="#141210",STIVALE="#241a06";
+function figuraFante(seme){const c=SEMI[seme].colore;return `<g transform="translate(30 43) scale(1.28)">
+  <path d="M-4.5 6 L-4.5 17 L-2 17 L-1.3 6 Z" fill="${ORO_FIG}" stroke="${INCH}" stroke-width="0.9"/>
+  <path d="M4.5 6 L4.5 17 L2 17 L1.3 6 Z" fill="${ORO_FIG}" stroke="${INCH}" stroke-width="0.9"/>
+  <path d="M-5.2 17 L-1.6 17 L-1 19.6 L-6 19.6 Z" fill="${STIVALE}" stroke="${INCH}" stroke-width="0.8"/>
+  <path d="M5.2 17 L1.6 17 L1 19.6 L6 19.6 Z" fill="${STIVALE}" stroke="${INCH}" stroke-width="0.8"/>
+  <path d="M-7.5 -10 L7.5 -10 L6 7 L-6 7 Z" fill="${c}" stroke="${INCH}" stroke-width="1.1" stroke-linejoin="round"/>
+  <path d="M-7.5 -3 H7.5" stroke="${INCH}" stroke-width="0.8" stroke-opacity=".5"/>
+  <rect x="-9.5" y="19.6" width="19" height="2.4" rx="0.6" fill="${c}" stroke="${INCH}" stroke-width="0.8"/>
+  <circle cx="0" cy="-14.5" r="4.6" fill="${PELLE}" stroke="${INCH}" stroke-width="1.1"/>
+  <path d="M-4.6 -17.3 Q0 -21.6 4.6 -17.3 Q1 -19.3 -4.6 -17.3 Z" fill="${c}" stroke="${INCH}" stroke-width="1"/>
+  <path d="M3.4 -18.6 Q7 -22.6 5.6 -26.6 Q4.3 -22.6 1.8 -19.2 Z" fill="${ORO_FIG}" stroke="${INCH}" stroke-width="0.8"/>
+  <path d="M-7 -8 L-12.5 2" stroke="${INCH}" stroke-width="1.3" stroke-linecap="round"/>
+  <path d="M7 -8 L13 -5" stroke="${INCH}" stroke-width="1.3" stroke-linecap="round"/>${semeMarker(seme,15,-6,0.8,0)}</g>`;}
+function figuraCavallo(seme){const c=SEMI[seme].colore,manto="#B8763F",manto2="#8f5a2c";return `<g transform="translate(30 46) scale(1.06)">
+  <path d="M-13 8 L-14 18 L-11 18 L-10.5 8 Z" fill="${manto2}" stroke="${INCH}" stroke-width="1"/>
+  <path d="M-5 9 L-5.5 18 L-2.5 18 L-2 9 Z" fill="${manto2}" stroke="${INCH}" stroke-width="1"/>
+  <path d="M6 9 L6.5 18 L9.5 18 L9 9 Z" fill="${manto2}" stroke="${INCH}" stroke-width="1"/>
+  <path d="M13 8 L14 18 L17 18 L16.5 8 Z" fill="${manto2}" stroke="${INCH}" stroke-width="1"/>
+  <path d="M-15 9 Q-17 -3 -7 -6 L-4 -13 L6 -13 L10 -5 Q17 -3 16 9 Z" fill="${manto}" stroke="${INCH}" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M-15 0 Q-20.5 4 -17.5 12" fill="none" stroke="${INCH}" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M6 -13 L11.5 -16.3 L13.5 -12 L10 -8 Z" fill="${manto}" stroke="${INCH}" stroke-width="1.1" stroke-linejoin="round"/>
+  <path d="M13.5 -12 L16.5 -11.5" stroke="${INCH}" stroke-width="1" stroke-linecap="round"/>
+  <rect x="-18" y="18" width="36" height="2.6" rx="0.6" fill="${c}" stroke="${INCH}" stroke-width="0.8"/>
+  <path d="M-3 -13 L6 -13 L7 -4 L-2 -4 Z" fill="${c}" stroke="${INCH}" stroke-width="1.1" stroke-linejoin="round"/>
+  <path d="M1 -4 L0.2 4 L2.6 4 L3.6 -4 Z" fill="${ORO_FIG}" stroke="${INCH}" stroke-width="0.9"/>
+  <path d="M0 -15.5 L7.3 -15.5 L7.8 -4 L0.5 -4 Z" fill="${c}" stroke="${INCH}" stroke-width="1.1" stroke-linejoin="round"/>
+  <circle cx="7.8" cy="-18.8" r="3.3" fill="${PELLE}" stroke="${INCH}" stroke-width="1"/>
+  <path d="M4.9 -20.8 Q7.8 -24 10.7 -20.8 Q8.7 -22.2 4.9 -20.8 Z" fill="${c}" stroke="${INCH}" stroke-width="0.9"/>
+  <path d="M4 -14.5 L1 -8.5" stroke="${INCH}" stroke-width="1.2" stroke-linecap="round"/>${semeMarker(seme,13,-8.5,0.68,-20)}</g>`;}
+function figuraRe(seme){const c=SEMI[seme].colore,capa=seme==="C"?"#7A1610":"#A82318";return `<g transform="translate(30 43) scale(1.28)">
+  <path d="M8 -9 Q16.5 -2 11 18 L6 15 Q9.5 0 6 -8 Z" fill="${capa}" stroke="${INCH}" stroke-width="1" stroke-linejoin="round"/>
+  <path d="M-4.5 6 L-4.5 17 L-2 17 L-1.3 6 Z" fill="${ORO_FIG}" stroke="${INCH}" stroke-width="0.9"/>
+  <path d="M4.5 6 L4.5 17 L2 17 L1.3 6 Z" fill="${ORO_FIG}" stroke="${INCH}" stroke-width="0.9"/>
+  <path d="M-5.2 17 L-1.6 17 L-1 19.6 L-6 19.6 Z" fill="${STIVALE}" stroke="${INCH}" stroke-width="0.8"/>
+  <path d="M5.2 17 L1.6 17 L1 19.6 L6 19.6 Z" fill="${STIVALE}" stroke="${INCH}" stroke-width="0.8"/>
+  <path d="M-7.5 -10 L7.5 -10 L6 7 L-6 7 Z" fill="${c}" stroke="${INCH}" stroke-width="1.1" stroke-linejoin="round"/>
+  <path d="M-7.5 -3 H7.5" stroke="${INCH}" stroke-width="0.8" stroke-opacity=".5"/>
+  <rect x="-9.5" y="19.6" width="19" height="2.4" rx="0.6" fill="${c}" stroke="${INCH}" stroke-width="0.8"/>
+  <path d="M-2.6 -13.3 Q0 -10 2.6 -13.3 L2 -11 Q0 -9.6 -2 -11 Z" fill="${PELLE}" stroke="${INCH}" stroke-width="0.8"/>
+  <circle cx="0" cy="-14.5" r="4.6" fill="${PELLE}" stroke="${INCH}" stroke-width="1.1"/>
+  <path d="M-5 -17.6 L-6.4 -22.6 L-2.8 -20.2 L0 -24.6 L2.8 -20.2 L6.4 -22.6 L5 -17.6 Z" fill="#C89B3C" stroke="${INCH}" stroke-width="1"/>
+  <circle cx="-2.8" cy="-20.2" r="0.7" fill="${capa}"/><circle cx="2.8" cy="-20.2" r="0.7" fill="${capa}"/><circle cx="0" cy="-23.4" r="0.8" fill="${capa}"/>
+  <path d="M7 -9 L13.5 -12 V-23" stroke="${INCH}" stroke-width="1.5" stroke-linecap="round" fill="none"/>${semeMarker(seme,13.5,-25.5,0.72,0)}</g>`;}
+function corpoCarta(seme,valore){
+  let inner;
+  if(valore===8) inner=figuraFante(seme);
+  else if(valore===9) inner=figuraCavallo(seme);
+  else if(valore===10) inner=figuraRe(seme);
+  else inner=PIP[valore].map((p,i)=>semeMarker(seme,p[0],p[1],1,seme==="S"?(i%2?22:-22):seme==="B"?(i%2?-25:25):0)).join("");
+  return `<svg viewBox="0 0 60 84" aria-hidden="true">${inner}</svg>`;
+}
+function htmlCarta(c,cls){
+  const f=FIGURE[c.v]?`<div class="figura" style="color:${SEMI[c.s].colore}">${FIGURE[c.v]}</div>`:"";
+  return `<div class="carta ${cls||""}" data-id="${c.v}${c.s}"><div class="num" style="color:${SEMI[c.s].colore}">${c.v}</div>${corpoCarta(c.s,c.v)}${f}</div>`;
+}
+const idC=c=>c.v+c.s;
+const STEMMA=`<svg class="stemma" viewBox="0 0 76 88" aria-label="stemma di famiglia Zaccaria">
+  <path d="M4 4h68v46c0 20-24 31-34 34C28 81 4 70 4 50Z" fill="none" stroke="#C89B3C" stroke-width="2.2"/>
+  <path d="M11 11h54v38c0 16-19 25-27 27-8-2-27-11-27-27Z" fill="none" stroke="rgba(200,155,60,.4)" stroke-width="1"/>
+  <text x="38" y="52" text-anchor="middle" font-family="Bodoni Moda, Georgia, serif" font-size="38" font-weight="700" fill="#F3EAD3">Z</text>
+  <circle cx="21" cy="66" r="5" fill="none" stroke="#C89B3C" stroke-width="1.6"/>
+  <circle cx="38" cy="70" r="5" fill="none" stroke="#C89B3C" stroke-width="1.6"/>
+  <circle cx="55" cy="66" r="5" fill="none" stroke="#C89B3C" stroke-width="1.6"/></svg>`;
+
+/* ============================ regole ============================ */
+function mazzoNuovo(){
+  const d=[];
+  for(const s of ["D","C","S","B"]) for(let v=1;v<=10;v++) d.push({v,s});
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+function prese(tavolo,valore){
+  const singole=tavolo.filter(c=>c.v===valore).map(c=>[c]);
+  if(singole.length) return singole;
+  const out=[];
+  (function cerca(i,acc,somma){
+    if(somma===valore&&acc.length>1){out.push(acc.slice());return;}
+    if(somma>=valore||i>=tavolo.length) return;
+    for(let j=i;j<tavolo.length;j++){acc.push(tavolo[j]);cerca(j+1,acc,somma+tavolo[j].v);acc.pop();}
+  })(0,[],0);
+  const visti=new Set(),unici=[];
+  for(const s of out){const k=s.map(idC).sort().join("-");if(!visti.has(k)){visti.add(k);unici.push(s);}}
+  return unici;
+}
+const PRIMIERA={7:21,6:18,1:16,5:15,4:14,3:13,2:12,8:10,9:10,10:10};
+function primiera(carte){let t=0;for(const s of ["D","C","S","B"]){const d=carte.filter(c=>c.s===s);if(d.length)t+=Math.max(...d.map(c=>PRIMIERA[c.v]));}return t;}
+function contaMano(st){
+  const A=st.prese.A,B=st.prese.B,den=x=>x.filter(c=>c.s==="D").length,sette=x=>x.some(c=>c.v===7&&c.s==="D");
+  const pA=primiera(A),pB=primiera(B);
+  const voci=[
+    {nome:"carte",a:A.length,b:B.length,vinc:A.length>B.length?"A":B.length>A.length?"B":null},
+    {nome:"denari",a:den(A),b:den(B),vinc:den(A)>den(B)?"A":den(B)>den(A)?"B":null},
+    {nome:"settebello",a:sette(A)?"sì":"—",b:sette(B)?"sì":"—",vinc:sette(A)?"A":sette(B)?"B":null},
+    {nome:"primiera",a:pA,b:pB,vinc:pA>pB?"A":pB>pA?"B":null},
+    {nome:"scope",a:st.scope.A,b:st.scope.B,vinc:null}];
+  let ptA=st.scope.A,ptB=st.scope.B;
+  for(const v of voci){if(v.vinc==="A")ptA++;if(v.vinc==="B")ptB++;}
+  return {voci,ptA,ptB};
+}
+function nuovaMano(st){
+  const m=mazzoNuovo();
+  st.tavolo=m.splice(0,4);
+  st.mani={A:m.splice(0,3),B:m.splice(0,3)};
+  st.mazzo=m; st.prese={A:[],B:[]}; st.scope={A:0,B:0};
+  st.ultimaPresa=null; st.turno=st.mazziere==="A"?"B":"A";
+  st.fase="gioco"; st.conto=null;
+  return st;
+}
+const altro=p=>p==="A"?"B":"A";
+
+/* ==================== collegamento (Firebase, via internet) ==================== */
+let DB=null, ST=null, MIO=null, IO=null, opzioni=null, timer=null, timerRitmo=null, erroreRete=false;
+const ROSA=["Rosário","Papà","Mamma","Giovanna","Roberto"];
+const SOGLIA_INATTIVITA_MIN=1.5;
+const app=document.getElementById("app");
+
+function idDispositivo(){
+  let id=locale("scopa_dispositivo");
+  if(!id){ id=Math.random().toString(36).slice(2,8).toUpperCase(); locale("scopa_dispositivo",id); }
+  return id;
+}
+function locale(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v); }catch(e){ return null; } }
+function normalizzaDB(u){
+  u=(u||"").trim().replace(/\s/g,"").replace(/\/+$/,"");
+  if(u && !/^https?:\/\//.test(u)) u="https://"+u;
+  return u;
+}
+async function leggiDB(percorso){
+  try{
+    const r=await fetch(`${DB}/${percorso}.json`,{cache:"no-store"});
+    if(!r.ok) throw new Error("risposta "+r.status);
+    erroreRete=false;
+    return await r.json();
+  }catch(e){ erroreRete=true; return null; }
+}
+async function scriviDB(percorso,valore){
+  try{
+    const r=await fetch(`${DB}/${percorso}.json`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(valore)});
+    if(!r.ok) throw new Error("risposta "+r.status);
+    erroreRete=false; return true;
+  }catch(e){ erroreRete=true; return false; }
+}
+const leggiTavolo=()=>leggiDB("tavolo");
+async function salva(st){
+  st.v=(st.v||0)+1; st.ultimoTocco=Date.now(); ST=st;
+  await scriviDB("tavolo",st);
+  disegna();
+}
+async function sincronizza(){
+  const st=await leggiTavolo();
+  if(st && (!ST || st.v>ST.v)){ ST=st; opzioni=null; disegna(); }
+  else if(!st && ST){ ST=null; lobby("Il tavolo è stato chiuso."); }
+}
+function avviaSync(){
+  clearInterval(timer); clearInterval(timerRitmo);
+  timer=setInterval(sincronizza,2200);
+  timerRitmo=setInterval(()=>{ if(ST) disegna(); },20000);
+}
+function fermaSync(){ clearInterval(timer); clearInterval(timerRitmo); }
+
+/* ============================ mosse ============================ */
+async function gioca(idCarta,insieme){
+  if(!ST||ST.turno!==MIO||ST.fase!=="gioco") return;
+  const st=JSON.parse(JSON.stringify(ST));
+  const mano=st.mani[MIO];
+  const i=mano.findIndex(c=>idC(c)===idCarta);
+  if(i<0) return;
+  const carta=mano.splice(i,1)[0];
+  const opz=prese(st.tavolo,carta.v);
+  const nome=st.giocatori[MIO];
+  let riga;
+  if(opz.length===0){
+    st.tavolo.push(carta);
+    riga=`${nome} lascia il ${carta.v} di ${SEMI[carta.s].nome}`;
+  }else{
+    const presa=opz.length===1?opz[0]:opz.find(s=>s.map(idC).sort().join("-")===insieme);
+    if(!presa){ opzioni={idCarta,opz}; disegna(); return; }
+    const ids=new Set(presa.map(idC));
+    st.tavolo=st.tavolo.filter(c=>!ids.has(idC(c)));
+    st.prese[MIO].push(carta,...presa);
+    st.ultimaPresa=MIO;
+    riga=`${nome} prende ${presa.map(c=>c.v+" di "+SEMI[c.s].nome).join(" + ")} col ${carta.v}`;
+    const ultimissima=st.mazzo.length===0&&st.mani.A.length+st.mani.B.length===0;
+    if(st.tavolo.length===0&&!ultimissima){ st.scope[MIO]++; riga+=" — scopa!"; }
+  }
+  st.diario=[riga,...(st.diario||[])].slice(0,7);
+  st.turno=altro(MIO);
+  if(st.mani.A.length===0&&st.mani.B.length===0){
+    if(st.mazzo.length>0){ st.mani.A=st.mazzo.splice(0,3); st.mani.B=st.mazzo.splice(0,3); }
+    else{
+      if(st.ultimaPresa) st.prese[st.ultimaPresa].push(...st.tavolo);
+      st.tavolo=[];
+      const c=contaMano(st);
+      st.punti.A+=c.ptA; st.punti.B+=c.ptB;
+      st.stat.A.scope+=st.scope.A; st.stat.B.scope+=st.scope.B;
+      const sb=c.voci.find(v=>v.nome==="settebello").vinc;
+      if(sb) st.stat[sb].sette++;
+      st.conto=c;
+      const finita=(st.punti.A>=11||st.punti.B>=11)&&st.punti.A!==st.punti.B;
+      st.fase=finita?"finita":"conto";
+      if(finita) await aggiornaAlbo(st);
+    }
+  }
+  opzioni=null;
+  await salva(st);
+}
+async function manoSuccessiva(){
+  const st=JSON.parse(JSON.stringify(ST));
+  st.mazziere=altro(st.mazziere); st.diario=[];
+  nuovaMano(st); await salva(st);
+}
+async function nuovaPartita(){
+  const st=JSON.parse(JSON.stringify(ST));
+  st.punti={A:0,B:0}; st.diario=[]; st.stat={A:{scope:0,sette:0},B:{scope:0,sette:0}};
+  st.mazziere=altro(st.mazziere);
+  nuovaMano(st); await salva(st);
+}
+async function aggiornaAlbo(st){
+  const albo=await leggiDB("albo")||{};
+  const vinc=st.punti.A>st.punti.B?"A":"B";
+  for(const p of ["A","B"]){
+    const n=st.giocatori[p]; if(!n) continue;
+    const chiave=n.replace(/[.#$\[\]\/]/g,"_");
+    const r=albo[chiave]||{nome:n,g:0,v:0,scope:0,sette:0};
+    r.nome=n; r.g++; if(p===vinc) r.v++;
+    r.scope+=st.stat[p].scope; r.sette+=st.stat[p].sette;
+    albo[chiave]=r;
+  }
+  await scriviDB("albo",albo);
+}
+
+/* ============================ tavolo ============================ */
+function disegna(){
+  if(!ST) return;
+  const io=ST.giocatori[MIO], lato=altro(MIO), lui=ST.giocatori[lato];
+  if(!lui){
+    let host="—"; try{ host=new URL(DB).host; }catch(e){}
+    app.innerHTML=`${STEMMA}
+      <div class="hero"><div class="casato">CASA ZACCARIA</div><h1>Tavolo apparecchiato</h1><div class="fregio"></div>
+      <p>Sei seduto/a come <b>${io}</b>. Appena si siede un altro, le carte si distribuiscono da sole.</p></div>
+      <div class="attesa pulsa">In attesa…</div>
+      ${erroreRete?'<div class="avviso">Non riesco a raggiungere il tavolo. Controlla la connessione.</div>':""}
+      <div class="pannello"><h2>Cosa vede questo telefono</h2>
+        <p class="aiuto">magazzino: <b>${host}</b></p>
+        <p class="aiuto">seduti adesso: <b>${[ST.giocatori.A,ST.giocatori.B].filter(Boolean).join(" e ")}</b></p>
+        <p class="aiuto">telefono: <b>${idDispositivo()}</b></p>
+        <p class="aiuto" style="margin-bottom:0">Se sull'altro telefono il magazzino è diverso, state usando due indirizzi diversi: è quello il motivo dell'attesa.</p>
+      </div>
+      <div class="riga"><button class="vuoto" onclick="esci()">Torna indietro</button></div>`;
+    return;
+  }
+  const mioTurno=ST.turno===MIO&&ST.fase==="gioco";
+  let h=`<div class="barra"><div class="etich">TAVOLO DI CASA</div>
+    <div class="punteggi"><div>${io} <b>${ST.punti[MIO]}</b></div><div>${lui} <b>${ST.punti[lato]}</b></div></div></div>
+    <div style="text-align:right;margin:-4px 0 10px"><button class="vuoto piccolo" onclick="disconnettiAltro()">Disconnetti ${lui}</button></div>`;
+  const fermoDa=ST.ultimoTocco?(Date.now()-ST.ultimoTocco)/60000:0;
+  if(ST.fase==="gioco"&&!mioTurno&&fermoDa>SOGLIA_INATTIVITA_MIN){
+    h+=`<div class="avviso">${lui} non gioca da un po' — forse si è disconnesso/a.
+      <div class="riga"><button class="piccolo" onclick="disconnettiAltro()">Disconnetti ${lui} e ricomincia</button></div></div>`;
+  }
+  if(ST.fase==="finita"){
+    const vincitore=ST.punti.A>ST.punti.B?ST.giocatori.A:ST.giocatori.B;
+    h+=`<div class="vinta">Vince ${vincitore}</div>${tabellaConto()}<div id="albo"></div>
+      <div class="riga"><button onclick="nuovaPartita()">Rivincita</button><button class="vuoto" onclick="esci()">Chiudi</button></div>`;
+    app.innerHTML=h; mostraAlbo(); return;
+  }
+  if(ST.fase==="conto"){
+    h+=`<div class="vinta">Mano finita</div>${tabellaConto()}
+      <div class="riga"><button onclick="manoSuccessiva()">Nuova mano</button></div>`;
+    app.innerHTML=h; return;
+  }
+  h+=`<div class="zona"><div class="zona-tit"><span>${lui}</span><span>${ST.mani[lato].length} carte</span></div>
+      <div class="mano-avv">${ST.mani[lato].map(()=>'<div class="dorso"></div>').join("")}</div></div>
+    <div class="zona"><div class="zona-tit"><span>tavolo</span><span>${ST.mazzo.length} nel mazzo</span></div>
+      <div class="campo ${ST.tavolo.length?"":"vuoto"}">${ST.tavolo.map(c=>htmlCarta(c)).join("")}</div></div>
+    <div class="turno ${mioTurno?"attivo":""}">${mioTurno?"Tocca a te":"Tocca a "+lui}</div>`;
+  if(opzioni){
+    h+=`<div class="zona"><div class="zona-tit">Puoi prendere in più modi — scegli:</div>`;
+    for(const s of opzioni.opz){
+      const k=s.map(idC).sort().join("-");
+      h+=`<div class="scelta" role="button" tabindex="0" onclick="gioca('${opzioni.idCarta}','${k}')">
+        ${s.map(c=>htmlCarta(c,"mini")).join("")}<span>= ${s.reduce((t,c)=>t+c.v,0)}</span></div>`;
+    }
+    h+=`<div class="riga"><button class="vuoto" onclick="annulla()">Annulla</button></div></div>`;
+  }
+  h+=`<div class="zona"><div class="zona-tit"><span>la tua mano</span><span>prese: ${ST.prese[MIO].length} · scope: ${ST.scope[MIO]}</span></div>
+      <div class="mano-mia">${ST.mani[MIO].map(c=>htmlCarta(c,mioTurno?"mia giocabile":"mia spenta")).join("")}</div></div>`;
+  if(ST.diario&&ST.diario.length) h+=`<div class="diario">${ST.diario.map(r=>`<div>${r}</div>`).join("")}</div>`;
+  if(erroreRete) h+=`<div class="avviso">Collegamento interrotto: la mossa potrebbe non essere arrivata.</div>`;
+  app.innerHTML=h;
+  if(mioTurno&&!opzioni){
+    app.querySelectorAll(".mano-mia .carta").forEach(el=>{
+      el.setAttribute("tabindex","0");
+      el.onclick=()=>gioca(el.dataset.id);
+      el.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();gioca(el.dataset.id);} };
+    });
+  }
+}
+function tabellaConto(){
+  const c=ST.conto; if(!c) return "";
+  const nA=ST.giocatori.A,nB=ST.giocatori.B;
+  return `<table class="conto"><tr><th></th><th>${nA}</th><th>${nB}</th><th></th></tr>
+    ${c.voci.map(v=>`<tr><td>${v.nome}</td><td>${v.a}</td><td>${v.b}</td>
+      <td class="pt">${v.nome==="scope"?"+"+v.a+"/+"+v.b:(v.vinc?("punto a "+(v.vinc==="A"?nA:nB)):"pari")}</td></tr>`).join("")}
+    <tr><td><b>totale mano</b></td><td class="pt">${c.ptA}</td><td class="pt">${c.ptB}</td><td></td></tr>
+    <tr><td><b>partita</b></td><td class="pt">${ST.punti.A}</td><td class="pt">${ST.punti.B}</td><td></td></tr></table>`;
+}
+async function mostraAlbo(){
+  const box=document.getElementById("albo"); if(!box) return;
+  const albo=await leggiDB("albo")||{};
+  const righe=Object.values(albo).sort((a,b)=>b.v-a.v||b.g-a.g);
+  if(!righe.length){ box.innerHTML=""; return; }
+  const max=righe[0].v;
+  box.innerHTML=`<table class="albo"><tr><th>albo di famiglia</th><th>vinte</th><th>giocate</th><th>scope</th><th>7 bello</th></tr>
+    ${righe.map(r=>`<tr class="${r.v===max&&max>0?"capofila":""}"><td>${r.nome}</td><td class="trofei">${r.v}</td><td>${r.g}</td><td>${r.scope}</td><td>${r.sette}</td></tr>`).join("")}</table>`;
+}
+function annulla(){ opzioni=null; disegna(); }
+function esci(){ fermaSync(); ST=null; MIO=null; lobby(); }
+async function disconnettiAltro(){
+  const lato=altro(MIO), nomeAltro=ST.giocatori[lato]||"l'altro giocatore";
+  if(!confirm("Disconnettere "+nomeAltro+"? La mano in corso va persa, tu resti seduto/a e il posto si libera.")) return;
+  const st={v:(ST.v||0)+1,giocatori:{A:ST.giocatori[MIO],B:null},dispositivi:{A:idDispositivo(),B:null},punti:{A:0,B:0},
+    stat:{A:{scope:0,sette:0},B:{scope:0,sette:0}},mazziere:"A",diario:[],fase:"attesa",
+    mazzo:[],tavolo:[],mani:{A:[],B:[]},prese:{A:[],B:[]},scope:{A:0,B:0},ultimaPresa:null,turno:"B",conto:null};
+  MIO="A";
+  await salva(st);
+}
+async function chiudiTutto(){
+  if(!confirm("Chiudere la partita e scollegare tutti?")) return;
+  await scriviDB("tavolo",null);
+  ST=null; MIO=null; fermaSync();
+  lobby("Tavolo liberato: ora è pronto per una partita nuova.");
+}
+
+/* ============================ ingresso ============================ */
+async function siediti(){
+  if(!IO){ lobby("Scegli prima il tuo nome."); return; }
+  const mio=idDispositivo();
+  app.innerHTML=`<div class="attesa pulsa">Mi siedo al tavolo…</div>`;
+  let st=await leggiTavolo();
+  if(erroreRete){ lobby("Non riesco a raggiungere il tavolo. Controlla la connessione o l'indirizzo del magazzino."); return; }
+  if(!st){
+    st={v:0,giocatori:{A:IO,B:null},dispositivi:{A:mio,B:null},punti:{A:0,B:0},
+      stat:{A:{scope:0,sette:0},B:{scope:0,sette:0}},mazziere:"A",diario:[],fase:"attesa",
+      mazzo:[],tavolo:[],mani:{A:[],B:[]},prese:{A:[],B:[]},scope:{A:0,B:0},ultimaPresa:null,turno:"B",conto:null};
+    MIO="A"; await salva(st); avviaSync(); return;
+  }
+  st.dispositivi=st.dispositivi||{A:null,B:null};
+  /* lo stesso telefono che rientra riprende il suo posto */
+  if(st.dispositivi.A===mio){ MIO="A"; st.giocatori.A=IO; ST=st; await salva(st); avviaSync(); return; }
+  if(st.dispositivi.B===mio){ MIO="B"; st.giocatori.B=IO; ST=st; await salva(st); avviaSync(); return; }
+  /* un telefono nuovo prende il posto libero, anche se il nome coincide */
+  if(!st.giocatori.B||!st.dispositivi.B){
+    st.giocatori.B=IO; st.dispositivi.B=mio; MIO="B";
+    st.stat=st.stat||{A:{scope:0,sette:0},B:{scope:0,sette:0}};
+    nuovaMano(st); await salva(st); avviaSync(); return;
+  }
+  if(!st.giocatori.A||!st.dispositivi.A){
+    st.giocatori.A=IO; st.dispositivi.A=mio; MIO="A"; await salva(st); avviaSync(); return;
+  }
+  app.innerHTML=`${STEMMA}<div class="hero"><div class="casato">CASA ZACCARIA</div><h1>Tavolo occupato</h1><div class="fregio"></div>
+    <p>Stanno giocando ${st.giocatori.A} e ${st.giocatori.B}, da altri due telefoni.</p></div>
+    <div class="riga"><button class="vuoto" onclick="chiudiTutto()">Chiudi la loro partita</button><button class="vuoto" onclick="lobby()">Indietro</button></div>`;
+}
+async function lobby(msg){
+  fermaSync(); ST=null; MIO=null;
+  const st=await leggiTavolo();
+  let statoHtml="";
+  if(st&&st.giocatori&&(st.giocatori.A||st.giocatori.B)){
+    const seduti=[st.giocatori.A,st.giocatori.B].filter(Boolean);
+    statoHtml=`<div class="pannello"><h2>In questo momento</h2>
+      <p class="aiuto">${seduti.length>1?"Partita in corso tra "+seduti.join(" e ")+".":seduti[0]+" è seduto/a in attesa."}</p>
+      <div class="riga"><button class="vuoto" onclick="chiudiTutto()">Chiudi la partita e scollega tutti</button></div></div>`;
+  }
+  app.innerHTML=`${STEMMA}
+    <div class="hero"><div class="casato">CASA ZACCARIA</div><h1>Scopa</h1><div class="fregio"></div>
+      <p>Il tavolo di famiglia, aperto da qualunque città.</p></div>
+    ${msg?`<div class="avviso">${msg}</div>`:""}
+    ${erroreRete?`<div class="avviso">Non raggiungo il magazzino online. <button class="vuoto piccolo" onclick="impostaDB(true)">cambia indirizzo</button></div>`:""}
+    <div class="pannello">
+      <h2>Chi si siede?</h2>
+      <p class="aiuto">Tocca il tuo nome, poi siediti. L'altro fa lo stesso dal suo telefono.</p>
+      <div class="rosa" id="rosa"></div>
+      <div class="riga"><button onclick="siediti()">Siediti al tavolo di casa</button></div>
+    </div>
+    ${statoHtml}
+    <div class="pannello" id="albo-lobby"></div>
+    <p class="nota"><button class="vuoto piccolo" onclick="impostaDB(true)">impostazioni del collegamento</button></p>`;
+  disegnaRosa(); mostraAlboLobby();
+}
+async function mostraAlboLobby(){
+  const box=document.getElementById("albo-lobby"); if(!box) return;
+  const albo=await leggiDB("albo")||{};
+  const righe=Object.values(albo).sort((a,b)=>b.v-a.v||b.g-a.g);
+  if(!righe.length){ box.innerHTML=`<p class="aiuto" style="margin:0">L'albo di famiglia si riempie dalla prima partita finita.</p>`; return; }
+  const max=righe[0].v;
+  box.innerHTML=`<table class="albo"><tr><th>albo di famiglia</th><th>vinte</th><th>giocate</th><th>scope</th><th>7 bello</th></tr>
+    ${righe.map(r=>`<tr class="${r.v===max&&max>0?"capofila":""}"><td>${r.nome}</td><td class="trofei">${r.v}</td><td>${r.g}</td><td>${r.scope}</td><td>${r.sette}</td></tr>`).join("")}</table>`;
+}
+function disegnaRosa(){
+  const box=document.getElementById("rosa"); if(!box) return;
+  box.innerHTML=ROSA.map(n=>`<button class="nome ${n===IO?"scelto":""}" onclick="scegliNome('${n}')">${n}</button>`).join("")
+    +`<button class="nome aggiungi" onclick="aggiungiNome()">+ un altro Zaccaria</button>`;
+}
+function scegliNome(n){ IO=n; locale("scopa_io",n); disegnaRosa(); }
+function aggiungiNome(){
+  const n=(prompt("Nome di chi gioca:")||"").trim().slice(0,14);
+  if(!n) return;
+  if(!ROSA.includes(n)) ROSA.push(n);
+  scegliNome(n);
+}
+
+/* ============================ primo avvio ============================ */
+function impostaDB(cambio){
+  fermaSync();
+  app.innerHTML=`${STEMMA}
+    <div class="hero"><div class="casato">CASA ZACCARIA</div><h1>Collegamento</h1><div class="fregio"></div>
+      <p>Incolla qui l'indirizzo del magazzino Firebase. Si fa una volta sola.</p></div>
+    <div class="pannello">
+      <p class="aiuto">Ha questa forma: https://qualcosa-default-rtdb.firebaseio.com</p>
+      <textarea id="db" placeholder="https://…firebaseio.com">${cambio&&DB?DB:""}</textarea>
+      <div class="riga"><button onclick="salvaDB()">Salva e prova</button>
+      ${cambio?'<button class="vuoto" onclick="lobby()">Annulla</button>':''}</div>
+      <div id="esitoDB"></div>
+    </div>
+    <p class="nota">Una volta salvato, usa "Copia il link per gli altri": chi apre quel link è già collegato e non deve impostare niente.</p>
+    ${DB?`<div class="riga"><button class="vuoto" onclick="copiaLink()">Copia il link per gli altri</button></div><div id="esitoLink"></div>`:""}`;
+}
+async function salvaDB(){
+  const val=normalizzaDB(document.getElementById("db")?.value);
+  const box=document.getElementById("esitoDB");
+  if(!val){ box.innerHTML=`<div class="avviso">Manca l'indirizzo.</div>`; return; }
+  box.innerHTML=`<div class="attesa pulsa">Provo il collegamento…</div>`;
+  const vecchio=DB; DB=val;
+  const ok=await scriviDB("prova",{quando:Date.now()});
+  if(!ok){ DB=vecchio; box.innerHTML=`<div class="avviso">Non funziona: controlla l'indirizzo e che le regole del database siano aperte in lettura e scrittura.</div>`; return; }
+  locale("scopa_db",val);
+  box.innerHTML=`<div class="ok">Collegamento riuscito.</div>`;
+  setTimeout(()=>lobby(),700);
+}
+async function copiaLink(){
+  const link=location.origin+location.pathname+"?db="+encodeURIComponent(DB);
+  try{ await navigator.clipboard.writeText(link); document.getElementById("esitoLink").innerHTML=`<div class="ok">Link copiato: mandalo a chi gioca con te.</div>`; }
+  catch(e){ document.getElementById("esitoLink").innerHTML=`<div class="codice-box">${link}</div>`; }
+}
+(function avvio(){
+  const daLink=new URLSearchParams(location.search).get("db");
+  DB=normalizzaDB(daLink||locale("scopa_db")||DB_PREIMPOSTATO);
+  IO=locale("scopa_io")||null;
+  if(daLink) locale("scopa_db",DB);
+  if(!DB) impostaDB(false); else lobby();
+})();
+Object.assign(window,{gioca,annulla,manoSuccessiva,nuovaPartita,siediti,lobby,esci,scegliNome,aggiungiNome,disconnettiAltro,chiudiTutto,impostaDB,salvaDB,copiaLink});
+
+</script>
+</html>
